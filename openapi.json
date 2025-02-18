@@ -1,0 +1,84 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/messages": {
+      "post": {
+        "operationId": "MessagingController_createMessage",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Message created successfully"
+          }
+        },
+        "summary": "Create a new message",
+        "tags": [
+          "messages"
+        ]
+      },
+      "get": {
+        "operationId": "MessagingController_getMessages",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of messages",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CreateMessageDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get all messages",
+        "tags": [
+          "messages"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Messaging Service",
+    "description": "API for real-time messaging",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "CreateMessageDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "example": "Hello, world!",
+            "description": "The text of the message"
+          },
+          "sender": {
+            "type": "string",
+            "example": "user1",
+            "description": "The sender of the message"
+          }
+        },
+        "required": [
+          "text",
+          "sender"
+        ]
+      }
+    }
+  }
+}
