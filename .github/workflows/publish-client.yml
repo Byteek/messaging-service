@@ -1,0 +1,75 @@
+name: Publish Client to NPM
+
+on:
+  push:
+    tags:
+      - 'v*' # Триггерится при создании тегов, начинающихся с "v" (например, v1.0.0)
+
+jobs:
+  publish-client:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout кода
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Настройка Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+
+      # 3. Установка зависимостей
+      - name: Install dependencies
+        run: npm install
+
+      # 4. Генерация OpenAPI спецификации
+      - name: Generate OpenAPI spec
+        run: npm run start:prod # Запускает приложение и создаёт openapi.json
+
+      # 5. Генерация TypeScript Axios клиента
+      - name: Generate TypeScript Axios client
+        run: |
+          docker run --rm \
+            -v "${PWD}:/local" \
+            openapitools/openapi-generator-cli generate \
+            -g typescript-axios \
+            -i /local/openapi.json \
+            -o /local/generated-client-axios
+
+      # 6. Генерация NestJS клиента
+      - name: Generate NestJS client
+        run: |
+          docker run --rm \
+            -v "${PWD}:/local" \
+            openapitools/openapi-generator-cli generate \
+            -g typescript-nestjs \
+            -i /local/openapi.json \
+            -o /local/generated-client-nestjs
+
+      # 7. Обновление версии в package.json
+      - name: Update version in package.json
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          cd generated-client-axios
+          npm version $VERSION --no-git-tag-version
+          cd ../generated-client-nestjs
+          npm version $VERSION --no-git-tag-version
+        env:
+          GITHUB_REF: ${{ github.ref }}
+
+      # 8. Публикация Axios клиента в NPM
+      - name: Publish Axios client to NPM
+        working-directory: ./generated-client-axios
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # 9. Публикация NestJS клиента в NPM
+      - name: Publish NestJS client to NPM
+        working-directory: ./generated-client-nestjs
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

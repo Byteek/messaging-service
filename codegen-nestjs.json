@@ -1,0 +1,9 @@
+{
+  "generatorName": "typescript-nestjs",
+  "inputSpec": "./openapi.json",
+  "outputDir": "./generated-client-nestjs",
+  "additionalProperties": {
+    "supportsES6": "true",
+    "withInterfaces": "true"
+  }
+}
