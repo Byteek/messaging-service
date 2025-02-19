@@ -1,28 +1,30 @@
 FROM node:20-alpine AS builder
 
+# Установка рабочей директории
 WORKDIR /app
 
-# Копируем зависимости и устанавливаем их
+# Копирование package.json и package-lock.json
 COPY package*.json ./
-RUN npm install
 
-# Копируем исходный код
+# Установка зависимостей
+RUN npm ci
+
+# Копирование исходного кода
 COPY . .
 
-# Сборка приложения
+# Сборка проекта
 RUN npm run build
 
-# Финальный образ
+# Stage 2: Production
 FROM node:20-alpine
 
+# Установка рабочей директории
 WORKDIR /app
 
-# Копируем результаты сборки из stage builder
+# Копирование только необходимых файлов из builder
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
 
-# Открываем порт
-EXPOSE 3000
-
-# Запускаем приложение
-CMD ["node", "dist/main"]
+# Команда для запуска приложения
+CMD ["npm", "start"]

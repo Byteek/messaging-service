@@ -1,4 +1,4 @@
-name: Publish Client to NPM
+name: Publish Client to NPM and Docker Image
 
 on:
   push:
@@ -65,41 +65,51 @@ jobs:
         run: |
           docker run --rm \
             -v "${PWD}:/local" \
+            --user "$(id -u):$(id -g)" \
             openapitools/openapi-generator-cli generate \
             -g typescript-axios \
             -i /local/openapi.json \
             -o /local/generated-client-axios \
             --additional-properties npmName=your-axios-package-name,npmVersion=${{ env.version }},npmRepository=https://registry.npmjs.org/
 
-      # 8. Установка зависимостей для Axios клиента
+      # 8. Исправление прав доступа для Axios клиента
+      - name: Fix permissions for Axios client
+        run: sudo chown -R $(id -u):$(id -g) ./generated-client-axios
+
+      # 9. Установка зависимостей для Axios клиента
       - name: Install dependencies for Axios client
         working-directory: ./generated-client-axios
-        run: npm install
+        run: npm ci
 
-      # 9. Публикация Axios клиента в NPM
+      # 10. Публикация Axios клиента в NPM
       - name: Publish Axios client to NPM
         working-directory: ./generated-client-axios
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # 10. Генерация NestJS клиента
+      # 11. Генерация NestJS клиента
       - name: Generate NestJS client
         run: |
           docker run --rm \
             -v "${PWD}:/local" \
+            --user "$(id -u):$(id -g)" \
             openapitools/openapi-generator-cli generate \
             -g typescript-nestjs \
             -i /local/openapi.json \
             -o /local/generated-client-nestjs \
             --additional-properties npmName=your-nestjs-package-name,npmVersion=${{ env.version }},npmRepository=https://registry.npmjs.org/
 
-      # 11. Установка зависимостей для NestJS клиента
+      # 12. Исправление прав доступа для NestJS клиента
+      - name: Fix permissions for NestJS client
+        run: sudo chown -R $(id -u):$(id -g) ./generated-client-nestjs
+
+      # 13. Установка зависимостей для NestJS клиента
       - name: Install dependencies for NestJS client
         working-directory: ./generated-client-nestjs
-        run: npm install
+        run: npm ci
 
-      # 12. Публикация NestJS клиента в NPM
+      # 14. Публикация NestJS клиента в NPM
       - name: Publish NestJS client to NPM
         working-directory: ./generated-client-nestjs
         run: npm publish --access public
