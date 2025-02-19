@@ -75,16 +75,16 @@ jobs:
             -i /local/openapi.json \
             -o /local/generated-client-nestjs
 
-      # 8. Обновление версии в package.json
-      - name: Update version in package.json
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          cd generated-client-axios
-          npm version $VERSION --no-git-tag-version
-          cd ../generated-client-nestjs
-          npm version $VERSION --no-git-tag-version
-        env:
-          GITHUB_REF: ${{ github.ref }}
+#      # 8. Обновление версии в package.json
+#      - name: Update version in package.json
+#        run: |
+#          VERSION=${GITHUB_REF#refs/tags/v}
+#          cd generated-client-axios
+#          npm version $VERSION --no-git-tag-version
+#          cd ../generated-client-nestjs
+#          npm version $VERSION --no-git-tag-version
+#        env:
+#          GITHUB_REF: ${{ github.ref }}
 
       # 9. Публикация Axios клиента в NPM
       - name: Publish Axios client to NPM
