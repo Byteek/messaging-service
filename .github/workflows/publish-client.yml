@@ -8,6 +8,7 @@ on:
 jobs:
   publish-client:
     runs-on: ubuntu-latest
+
     services:
       postgres:
         image: postgres:15
@@ -54,8 +55,12 @@ jobs:
           DB_NAME: messages
           GENERATE_OPENAPI: true
 
+      # 6. Извлечение версии из тега
+      - name: Extract version from tag
+        id: extract_version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
 
-      # 6. Генерация TypeScript Axios клиента
+      # 7. Генерация TypeScript Axios клиента
       - name: Generate TypeScript Axios client
         run: |
           docker run --rm \
@@ -63,28 +68,13 @@ jobs:
             openapitools/openapi-generator-cli generate \
             -g typescript-axios \
             -i /local/openapi.json \
-            -o /local/generated-client-axios
+            -o /local/generated-client-axios \
+            --additional-properties npmName=your-axios-package-name,npmVersion=${{ env.version }},npmRepository=https://registry.npmjs.org/
 
-      # 7. Генерация NestJS клиента
-      - name: Generate NestJS client
-        run: |
-          docker run --rm \
-            -v "${PWD}:/local" \
-            openapitools/openapi-generator-cli generate \
-            -g typescript-nestjs \
-            -i /local/openapi.json \
-            -o /local/generated-client-nestjs
-
-#      # 8. Обновление версии в package.json
-#      - name: Update version in package.json
-#        run: |
-#          VERSION=${GITHUB_REF#refs/tags/v}
-#          cd generated-client-axios
-#          npm version $VERSION --no-git-tag-version
-#          cd ../generated-client-nestjs
-#          npm version $VERSION --no-git-tag-version
-#        env:
-#          GITHUB_REF: ${{ github.ref }}
+      # 8. Установка зависимостей для Axios клиента
+      - name: Install dependencies for Axios client
+        working-directory: ./generated-client-axios
+        run: npm install
 
       # 9. Публикация Axios клиента в NPM
       - name: Publish Axios client to NPM
@@ -93,7 +83,23 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # 10. Публикация NestJS клиента в NPM
+      # 10. Генерация NestJS клиента
+      - name: Generate NestJS client
+        run: |
+          docker run --rm \
+            -v "${PWD}:/local" \
+            openapitools/openapi-generator-cli generate \
+            -g typescript-nestjs \
+            -i /local/openapi.json \
+            -o /local/generated-client-nestjs \
+            --additional-properties npmName=your-nestjs-package-name,npmVersion=${{ env.version }},npmRepository=https://registry.npmjs.org/
+
+      # 11. Установка зависимостей для NestJS клиента
+      - name: Install dependencies for NestJS client
+        working-directory: ./generated-client-nestjs
+        run: npm install
+
+      # 12. Публикация NestJS клиента в NPM
       - name: Publish NestJS client to NPM
         working-directory: ./generated-client-nestjs
         run: npm publish --access public
