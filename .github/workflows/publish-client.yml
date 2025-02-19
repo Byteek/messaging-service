@@ -25,11 +25,15 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # 4. Генерация OpenAPI спецификации
-      - name: Generate OpenAPI spec
-        run: npm run start:prod # Запускает приложение и создаёт openapi.json
+      # 4. Сборка проекта
+      - name: Build project
+        run: npm run build
 
-      # 5. Генерация TypeScript Axios клиента
+      # 5. Генерация OpenAPI спецификации
+      - name: Generate OpenAPI spec
+        run: npm run start:prod
+
+      # 6. Генерация TypeScript Axios клиента
       - name: Generate TypeScript Axios client
         run: |
           docker run --rm \
@@ -39,7 +43,7 @@ jobs:
             -i /local/openapi.json \
             -o /local/generated-client-axios
 
-      # 6. Генерация NestJS клиента
+      # 7. Генерация NestJS клиента
       - name: Generate NestJS client
         run: |
           docker run --rm \
@@ -49,7 +53,7 @@ jobs:
             -i /local/openapi.json \
             -o /local/generated-client-nestjs
 
-      # 7. Обновление версии в package.json
+      # 8. Обновление версии в package.json
       - name: Update version in package.json
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
@@ -60,14 +64,14 @@ jobs:
         env:
           GITHUB_REF: ${{ github.ref }}
 
-      # 8. Публикация Axios клиента в NPM
+      # 9. Публикация Axios клиента в NPM
       - name: Publish Axios client to NPM
         working-directory: ./generated-client-axios
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      # 9. Публикация NestJS клиента в NPM
+      # 10. Публикация NestJS клиента в NPM
       - name: Publish NestJS client to NPM
         working-directory: ./generated-client-nestjs
         run: npm publish --access public
