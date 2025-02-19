@@ -79,7 +79,7 @@ jobs:
       # 9. Установка зависимостей для Axios клиента
       - name: Install dependencies for Axios client
         working-directory: ./generated-client-axios
-        run: npm ci
+        run: npm i
 
       # 10. Публикация Axios клиента в NPM
       - name: Publish Axios client to NPM
@@ -107,7 +107,7 @@ jobs:
       # 13. Установка зависимостей для NestJS клиента
       - name: Install dependencies for NestJS client
         working-directory: ./generated-client-nestjs
-        run: npm ci
+        run: npm i
 
       # 14. Публикация NestJS клиента в NPM
       - name: Publish NestJS client to NPM
