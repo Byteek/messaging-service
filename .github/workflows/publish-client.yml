@@ -8,6 +8,20 @@ on:
 jobs:
   publish-client:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: messages
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
     steps:
       # 1. Checkout кода
@@ -29,10 +43,15 @@ jobs:
       - name: Build project
         run: npm run build
 
+      # 5. Генерация OpenAPI спецификации
       - name: Generate OpenAPI spec
         run: npm run start:prod
         env:
-          GENERATE_OPENAPI: true
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: postgres
+          DB_PASSWORD: password
+          DB_NAME: messages
 
       # 6. Генерация TypeScript Axios клиента
       - name: Generate TypeScript Axios client
