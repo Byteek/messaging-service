@@ -1,8 +1,8 @@
-// src/main.ts
 import * as fs from 'fs';
-import {DocumentBuilder, SwaggerModule} from "@nestjs/swagger";
-import {NestFactory} from "@nestjs/core";
-import {AppModule} from "./app.module";
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import * as process from 'node:process';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,11 +14,10 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
 
-  // Экспорт OpenAPI спецификации в файл
   fs.writeFileSync('./openapi.json', JSON.stringify(document, null, 2));
 
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(3000);
+  if (!process.env.GENERATE_OPENAPI) await app.listen(3000);
 }
 bootstrap();
