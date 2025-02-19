@@ -29,9 +29,10 @@ jobs:
       - name: Build project
         run: npm run build
 
-      # 5. Генерация OpenAPI спецификации
       - name: Generate OpenAPI spec
         run: npm run start:prod
+        env:
+          GENERATE_OPENAPI: true
 
       # 6. Генерация TypeScript Axios клиента
       - name: Generate TypeScript Axios client
